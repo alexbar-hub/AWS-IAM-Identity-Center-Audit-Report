@@ -1,22 +1,60 @@
 #!/bin/bash
 
+# set -e
+# set -o pipefail
+
+####################################################
+# Variables                                        #
+####################################################
+now=$(date +"%Y%m%d-%H%M%S")
+PERMISSIONSETS_AWS_CSV="AWSAccounts-PermissionSets-Group"
+USERS_GROUPS_CSV="Users-Groups"
+PERMISSIONSETS_DETAILS_CSV="PermissionSets-Details"
+REPORT="$now"-Report
+INLINE_POLICIES="$REPORT"/"$now"-InlinePolicies
+S3BUCKET="<YOUR S# BUCKET NAME HERE>"
+
+####################################################
+# Pre-Execution checks                             #
+####################################################
+
 if [ $# -lt 1 ]; then
     echo "Usage: $0 sso-instance-arn"
     exit 1
 fi
 
-# set -e
-# set -o pipefail
-
-# Variables
-now=$(date +"%Y%m%d-%H%M%S")
-PERMISSIONSETS_AWS_CSV="PermissionSets-AWS_Accounts"
-USERS_GROUPS_CSV="Users-Groups"
-PERMISSIONSETS_DETAILS_CSV="PermissionSets-Details"
-REPORT="$now"-Report
-INLINE_POLICIES="$REPORT"/"$now"-InlinePolicies
-
-mkdir -p "$INLINE_POLICIES"
+if [ $# -lt 2 ]; then
+    echo "You didn't specify a bucket in S3, the output will be saved in the pre-defined bucket" "$S3BUCKET" ", checking if you can write to it..."
+    touch s3writetest
+    aws s3 cp s3writetest s3://"$S3BUCKET"/s3writetest
+    if [ "$?" -eq 0 ]; then
+      echo "You can write to the pre-defined bucket" "$S3BUCKET" ", continuing..."
+      rm s3writetest
+      aws s3 rm s3://"$S3BUCKET"/s3writetest
+    else
+      echo "You cannot write to the pre-defined bucket" "$S3BUCKET" ", your content will be saved only in your working directory."
+      rm s3writetest
+      S3BUCKET="Not Available."
+      echo "Continuing..."
+      sleep 5
+    fi
+else
+    echo "You specified a non-predefined bucket, your output will be saved in the" "$2" "S3 bucket, if it exists and if you can access it, checking...."
+    touch s3writetest
+    aws s3 cp s3writetest s3://"$2"/s3writetest
+    if [ "$?" -eq 0 ]; then
+      echo "The bucket" "$2" "does exist and you have write access to it, your content will be saved also in there."
+      aws s3 rm s3://"$2"/s3writetest
+      rm s3writetest
+      S3BUCKET="$2"
+    else
+        echo "The specified bucket" "$2" "does not exist or you cannot access it, your content will be saved only in your working directory."
+        rm s3writetest
+        S3BUCKET="Not Available."
+        echo "Continuing..."
+        sleep 5
+    fi
+fi
 
 SSO_INSTANCE_ARN="$1"
 export SSO_INSTANCE_ARN
@@ -27,8 +65,10 @@ IDENTITY_STORE_ID="$(\
 )"
 export IDENTITY_STORE_ID
 
+mkdir -p "$INLINE_POLICIES"
+
 ####################################################
-# AWS accounts - Groups/Users - Permission Sets    #
+# AWS accounts - Permission Sets - Groups/Users    #
 ####################################################
 echo "Generating a list of AWS accounts - Groups/Users - Permission Sets..."
 
@@ -110,6 +150,8 @@ for PERMISSION_SET_ARN in "${PERMISSION_SETS[@]}"; do
         done
     done
 done
+# Delete empty lines
+cat "$REPORT"/"$now"-"$PERMISSIONSETS_AWS_CSV".json | grep "\S" > "$REPORT"/temp && mv "$REPORT"/temp "$REPORT"/"$now"-"$PERMISSIONSETS_AWS_CSV".json
 # Add comma at the end of each line but the last one
 sed '$!s/$/,/' "$REPORT"/"$now"-"$PERMISSIONSETS_AWS_CSV".json > "$REPORT"/temp && mv "$REPORT"/temp "$REPORT"/"$now"-"$PERMISSIONSETS_AWS_CSV".json
 # Add [ before the first line
@@ -228,3 +270,13 @@ for PERMISSION_SET_ARN in "${PERMISSION_SETS[@]}"; do
 done
 
 echo "The Permission Sets - All policies report is ready."
+
+if [ "$S3BUCKET" == "Not Available." ]; then
+  echo "The output file has been created in your local working folder."
+  echo "The process is now complete."
+else
+  echo "Uploading the output files into the" "$S3BUCKET" "bucket..."
+  aws s3 cp "$REPORT" s3://"$S3BUCKET"/"$REPORT" --recursive
+  echo "The output file has been created in your local working folder and also uploaded into the" "$S3BUCKET" "bucket."
+  echo "The process is now complete."
+fi
