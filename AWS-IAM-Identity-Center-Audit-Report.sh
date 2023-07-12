@@ -24,7 +24,7 @@ if [ $# -lt 1 ]; then
 fi
 
 if [ $# -lt 2 ]; then
-    echo "You didn't specify a bucket in S3, the output will be saved in the pre-defined bucket" "$S3BUCKET" ", checking if you can write to it..."
+    echo "You did not specify a bucket in S3, the output will be saved in the pre-defined bucket" "$S3BUCKET" ", checking if you can write to it..."
     touch s3writetest
     aws s3 cp s3writetest s3://"$S3BUCKET"/s3writetest
     if [ "$?" -eq 0 ]; then
