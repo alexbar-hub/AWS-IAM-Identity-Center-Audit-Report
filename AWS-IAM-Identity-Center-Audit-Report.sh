@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#########################################################################################
+# Author: alexbar-hub                                                                   #
+# Original work (1st block): Chance Zibolski - https://gist.github.com/chancez          #
+# Repo: https://github.com/alexbar-hub/AWS-IAM-Identity-Center-Audit-Report             #
+#########################################################################################
+
 # set -e
 # set -o pipefail
 

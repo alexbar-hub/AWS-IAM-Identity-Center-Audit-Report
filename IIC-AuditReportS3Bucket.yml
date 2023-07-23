@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creates a bucket that hosts all IIC Reports and Audits"
+
+Parameters:
+  
+  IICAuditReportS3BucketName:
+    Type: String
+    Default: <Name of your bucket here>
+
+  IICAuditReportS3BucketIP1:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP2:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP3:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP4:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP5:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP6:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP7:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP8:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP9:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP10:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP11:
+    Type: String
+    Default: <IP to whitelist here>
+
+  IICAuditReportS3BucketIP12:
+    Type: String
+    Default: <IP to whitelist here>
+
+
+
+
+Resources:
+
+  IICAuditReportS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref IICAuditReportS3BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      VersioningConfiguration:
+        Status: "Suspended"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+            - '*'
+            AllowedMethods:
+            - GET
+            AllowedOrigins:
+            - '*'
+            ExposedHeaders:
+            - ''
+
+  IICAuditReportBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref IICAuditReportS3BucketName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+            - 's3:GetObject'
+            - 's3:ListBucket'
+            Effect: Allow
+            Resource: 
+              - !Sub 'arn:aws:s3:::${IICAuditReportS3BucketName}/*'
+              - !Sub 'arn:aws:s3:::${IICAuditReportS3BucketName}'
+            Principal: '*'
+            Condition:
+              IpAddress:
+                aws:SourceIp:
+                  - !Ref IICAuditReportS3BucketIP1
+                  - !Ref IICAuditReportS3BucketIP2
+                  - !Ref IICAuditReportS3BucketIP3
+                  - !Ref IICAuditReportS3BucketIP4
+                  - !Ref IICAuditReportS3BucketIP5
+                  - !Ref IICAuditReportS3BucketIP6
+                  - !Ref IICAuditReportS3BucketIP7
+                  - !Ref IICAuditReportS3BucketIP8
+                  - !Ref IICAuditReportS3BucketIP9
+                  - !Ref IICAuditReportS3BucketIP10
+                  - !Ref IICAuditReportS3BucketIP11
+                  - !Ref IICAuditReportS3BucketIP12
