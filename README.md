@@ -8,6 +8,7 @@
   - [How it works](#how-it-works)
   - [Usage](#usage)
   - [Credits](#credits)
+- [Licence](#licence)
 
 ## Intro
 Welcome to the AWS-IAM-Identity-Center-Audit-Report project! Have you been wondering how you could get a detailed view of all users, groups, AWS accounts, permission sets and all the associations among them in IAM Identity Center? What about having the report automatically browsable from withing your network for review? 
@@ -114,3 +115,6 @@ The process is now complete.
 * [Chance Zibolski - chancez](https://gist.github.com/chancez) - Original author of the first block, available [here](https://gist.github.com/chancez/ddf9ba826d7a48d121eec0fbf409b62d#file-permission-sets-export-sh).
 
 * [ercan.py ☁️ flightlesstux](https://github.com/flightlesstux) - Original author of the S3-Directory-Listing, available [here](https://github.com/flightlesstux/S3-Directory-Listing).
+
+# Licence
+See licence, applies to the code I added, not necessarily to the code mentioned in the credits.
